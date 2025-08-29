@@ -1,24 +1,27 @@
-# domain/commands/m3c2_command.py
-"""Konkrete Command-Implementierungen für M3C2-Pipeline"""
+# New_Architecture/domain/commands/m3c2_commands.py
+"""M3C2 Pipeline Commands - Clean Implementation"""
 
 import logging
 import numpy as np
-from typing import List, Optional
+from typing import Optional
 from pathlib import Path
 
 from domain.commands.base import Command, PipelineContext
-from domain.entities import M3C2Parameters, M3C2Result, CloudStatistics
+from domain.entities import M3C2Parameters, M3C2Result
+from infrastructure.repositories.enhanced_point_cloud_repository import EnhancedPointCloudRepository
+from infrastructure.repositories.distance_repository import DistanceRepository
+from infrastructure.repositories.file_point_cloud_repository import FileParameterRepository
 from orchestration.m3c2_runner import M3C2Runner
 
 logger = logging.getLogger(__name__)
 
 
 class LoadPointCloudsCommand(Command):
-    """Lädt Punktwolken aus dem Dateisystem"""
+    """Lädt Punktwolken mit Multi-Format Support"""
     
-    def __init__(self, repository):
+    def __init__(self, pc_repository: EnhancedPointCloudRepository):
         super().__init__("LoadPointClouds")
-        self.repository = repository
+        self.repository = pc_repository
     
     def execute(self, context: PipelineContext) -> PipelineContext:
         self.log_execution(context)
@@ -26,41 +29,65 @@ class LoadPointCloudsCommand(Command):
         config = context.get('config')
         cloud_pair = config.cloud_pair
         
-        # Baue Pfade
-        folder_path = Path(cloud_pair.folder_id)
-        mov_path = folder_path / f"{cloud_pair.moving_cloud}.ply"
-        ref_path = folder_path / f"{cloud_pair.reference_cloud}.ply"
+        # Finde und lade Moving Cloud
+        mov_path = self._find_cloud_file(cloud_pair.folder_id, cloud_pair.moving_cloud)
+        if not mov_path:
+            raise FileNotFoundError(f"Moving cloud not found: {cloud_pair.moving_cloud}")
+        
+        # Finde und lade Reference Cloud
+        ref_path = self._find_cloud_file(cloud_pair.folder_id, cloud_pair.reference_cloud)
+        if not ref_path:
+            raise FileNotFoundError(f"Reference cloud not found: {cloud_pair.reference_cloud}")
         
         try:
-            # Lade Punktwolken
-            mov_cloud = self.repository.load_point_cloud(str(mov_path))
-            ref_cloud = self.repository.load_point_cloud(str(ref_path))
+            # Lade mit automatischer Format-Erkennung
+            mov_cloud = self.repository.load_point_cloud(mov_path)
+            ref_cloud = self.repository.load_point_cloud(ref_path)
+            
+            logger.info(
+                f"Loaded clouds - Moving: {mov_cloud.cloud.shape}, "
+                f"Reference: {ref_cloud.cloud.shape}"
+            )
             
             # Speichere im Kontext
             context.set('moving_cloud', mov_cloud)
             context.set('reference_cloud', ref_cloud)
             
             # Bestimme Corepoints
-            if config.mov_as_corepoints:
-                corepoints = np.asarray(mov_cloud.cloud)
-            else:
-                corepoints = np.asarray(ref_cloud.cloud)
-            
-            # Subsampling wenn gewünscht
-            if config.use_subsampled_corepoints > 1:
-                step = config.use_subsampled_corepoints
-                corepoints = corepoints[::step]
-                logger.info(f"Subsampled corepoints from {len(mov_cloud.cloud)} to {len(corepoints)}")
-            
+            corepoints = self._determine_corepoints(mov_cloud, ref_cloud, config)
             context.set('corepoints', corepoints)
-            
-            logger.info(f"Loaded clouds: mov={mov_cloud.cloud.shape}, ref={ref_cloud.cloud.shape}")
             
         except Exception as e:
             self.handle_error(e, context)
             raise
         
         return context
+    
+    def _find_cloud_file(self, folder: str, basename: str) -> Optional[str]:
+        """Sucht nach Punktwolken-Datei in verschiedenen Formaten"""
+        extensions = ['.ply', '.xyz', '.las', '.laz', '.obj', '.gpc', '.txt']
+        
+        for ext in extensions:
+            test_path = f"{folder}/{basename}{ext}"
+            if self.repository.exists(test_path):
+                return test_path
+        
+        return None
+    
+    def _determine_corepoints(self, mov_cloud, ref_cloud, config) -> np.ndarray:
+        """Bestimmt Corepoints basierend auf Konfiguration"""
+        if config.mov_as_corepoints:
+            corepoints = np.asarray(mov_cloud.cloud)
+        else:
+            corepoints = np.asarray(ref_cloud.cloud)
+        
+        # Subsampling wenn gewünscht
+        if config.use_subsampled_corepoints > 1:
+            step = config.use_subsampled_corepoints
+            corepoints = corepoints[::step]
+            logger.info(f"Subsampled corepoints by factor {step}: {len(corepoints)} points")
+        
+        return corepoints
     
     def can_execute(self, context: PipelineContext) -> bool:
         return context.has('config')
@@ -84,13 +111,6 @@ class EstimateParametersCommand(Command):
             logger.info("Using provided M3C2 parameters")
             context.set('m3c2_params', config.m3c2_params)
             return context
-        
-        # Prüfe ob existierende Parameter verwendet werden sollen
-        if config.use_existing_params:
-            params = self._load_existing_params(context)
-            if params:
-                context.set('m3c2_params', params)
-                return context
         
         # Schätze Parameter
         corepoints = context.get('corepoints')
@@ -120,11 +140,6 @@ class EstimateParametersCommand(Command):
     
     def can_execute(self, context: PipelineContext) -> bool:
         return context.has('corepoints')
-    
-    def _load_existing_params(self, context: PipelineContext) -> Optional[M3C2Parameters]:
-        """Versucht existierende Parameter zu laden"""
-        # TODO: Implementiere Laden aus Repository
-        return None
 
 
 class RunM3C2Command(Command):
@@ -215,12 +230,16 @@ class DetectOutliersCommand(Command):
 
 
 class SaveResultsCommand(Command):
-    """Speichert Ergebnisse im Dateisystem"""
+    """Speichert Ergebnisse mit Repository"""
     
-    def __init__(self, pc_repository, param_repository):
+    def __init__(
+        self,
+        dist_repository: DistanceRepository,
+        param_repository: FileParameterRepository
+    ):
         super().__init__("SaveResults")
-        self.pc_repository = pc_repository
-        self.param_repository = param_repository
+        self.dist_repo = dist_repository
+        self.param_repo = param_repository
     
     def execute(self, context: PipelineContext) -> PipelineContext:
         self.log_execution(context)
@@ -235,51 +254,42 @@ class SaveResultsCommand(Command):
         
         try:
             # Speichere Distanzen
-            dist_path = output_base / f"{prefix}_m3c2_distances.txt"
-            self.pc_repository.save_distances(result.distances, str(dist_path))
+            dist_path = f"{output_base}/{prefix}_m3c2_distances.txt"
+            self.dist_repo.save_distances(result.distances, dist_path)
             
             # Speichere Unsicherheiten
-            uncert_path = output_base / f"{prefix}_m3c2_uncertainties.txt"
-            self.pc_repository.save_distances(result.uncertainties, str(uncert_path))
+            uncert_path = f"{output_base}/{prefix}_m3c2_uncertainties.txt"
+            self.dist_repo.save_distances(result.uncertainties, uncert_path)
             
             # Speichere Distanzen mit Koordinaten
             coords = np.asarray(mov_cloud.cloud)
-            coord_dist_path = output_base / f"{prefix}_m3c2_distances_coordinates.txt"
-            self.pc_repository.save_distances_with_coordinates(
-                coords, result.distances, str(coord_dist_path)
+            coord_dist_path = f"{output_base}/{prefix}_m3c2_distances_coordinates.txt"
+            self.dist_repo.save_distances_with_coordinates(
+                coords, result.distances, coord_dist_path
             )
             
             # Speichere Parameter
-            params_path = output_base / f"{prefix}_m3c2_params.txt"
-            self.param_repository.save_params(
+            params_path = f"{output_base}/{prefix}_m3c2_params.txt"
+            self.param_repo.save_params(
                 result.parameters_used.to_dict(),
-                str(params_path)
+                params_path
             )
             
             # Speichere Outlier/Inlier wenn vorhanden
             if context.has('outliers'):
                 outliers = context.get('outliers')
-                inliers = context.get('inliers')
+                base_path = f"{output_base}/{prefix}_m3c2_distances_coordinates"
                 
-                # Filtere Koordinaten und Distanzen
-                outlier_coords = coords[outliers]
-                outlier_dists = result.distances[outliers]
-                inlier_coords = coords[inliers]
-                inlier_dists = result.distances[inliers]
+                outlier_path, inlier_path = self.dist_repo.split_by_outliers(
+                    coords,
+                    result.distances,
+                    outliers,
+                    base_path,
+                    method=config.outlier_config.method.value
+                )
                 
-                # Speichere Outlier
-                outlier_path = output_base / f"{prefix}_m3c2_distances_coordinates_outlier_{config.outlier_config.method.value}.txt"
-                if len(outlier_coords) > 0:
-                    self.pc_repository.save_distances_with_coordinates(
-                        outlier_coords, outlier_dists, str(outlier_path)
-                    )
-                
-                # Speichere Inlier
-                inlier_path = output_base / f"{prefix}_m3c2_distances_coordinates_inlier_{config.outlier_config.method.value}.txt"
-                if len(inlier_coords) > 0:
-                    self.pc_repository.save_distances_with_coordinates(
-                        inlier_coords, inlier_dists, str(inlier_path)
-                    )
+                context.set('outlier_path', outlier_path)
+                context.set('inlier_path', inlier_path)
             
             logger.info(f"Results saved to {output_base}")
             
@@ -367,21 +377,10 @@ class GenerateVisualizationCommand(Command):
                 str(ply_path)
             )
             
-            # Generiere Outlier-Visualisierung wenn vorhanden
-            if context.has('outliers'):
-                outliers = context.get('outliers')
-                outlier_ply = output_base / f"{prefix}_outliers.ply"
-                self.visualization_service.create_outlier_cloud(
-                    mov_cloud,
-                    result.distances,
-                    outliers,
-                    str(outlier_ply)
-                )
-            
             logger.info(f"Visualizations saved to {output_base}")
             
         except Exception as e:
-            # Visualisierung ist nicht kritisch - log error aber fahre fort
+            # Visualisierung ist nicht kritisch
             logger.warning(f"Visualization failed: {e}")
             context.add_error(f"Visualization failed: {e}")
         
