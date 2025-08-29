@@ -1,0 +1,54 @@
+# Core Dependencies
+numpy>=1.21.0,<2.0.0
+pandas>=1.3.0,<2.0.0
+scipy>=1.7.0,<2.0.0
+scikit-learn>=1.0.0,<2.0.0
+
+# Point Cloud Processing
+py4dgeo>=0.3.0
+laspy>=2.0.0  # Für LAS/LAZ Dateien (optional)
+pyntcloud>=0.3.0  # Alternative Point Cloud Library (optional)
+
+# Visualization
+matplotlib>=3.4.0,<4.0.0
+seaborn>=0.11.0  # Für erweiterte Plots (optional)
+plotly>=5.0.0  # Für interaktive Plots (optional)
+
+# Data Export/Import
+openpyxl>=3.0.0  # Für Excel-Export
+xlsxwriter>=3.0.0  # Alternative für Excel
+h5py>=3.0.0  # Für HDF5 (optional)
+
+# Configuration
+pyyaml>=5.4.0  # Für YAML-Konfigurationen
+python-dotenv>=0.19.0  # Für Umgebungsvariablen
+
+# Logging & Monitoring
+colorlog>=6.0.0  # Für farbige Logs (optional)
+tqdm>=4.62.0  # Für Progress Bars
+
+# Testing (optional, für Entwicklung)
+pytest>=7.0.0
+pytest-cov>=3.0.0
+pytest-mock>=3.6.0
+
+# Code Quality (optional, für Entwicklung)
+black>=22.0.0
+flake8>=4.0.0
+mypy>=0.950
+pylint>=2.12.0
+
+# Documentation (optional)
+sphinx>=4.0.0
+sphinx-rtd-theme>=1.0.0
+
+# Performance (optional)
+numba>=0.55.0  # Für JIT-Compilation
+joblib>=1.1.0  # Für Parallelisierung
+dask>=2022.1.0  # Für große Datensätze
+
+# Utilities
+pathlib>=1.0.1
+typing-extensions>=4.0.0
+dataclasses>=0.6  # Backport für Python 3.6
+click>=8.0.0  # Für CLI (optional)

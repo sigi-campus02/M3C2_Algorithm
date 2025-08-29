@@ -1,0 +1,83 @@
+{
+  "data_path": "data",
+  "output_path": "outputs",
+  
+  "folder_ids": [
+    "Multi-Illumination"
+  ],
+  
+  "m3c2": {
+    "normal_scale": null,
+    "search_scale": null,
+    "use_existing_params": false
+  },
+  
+  "outlier_detection": {
+    "method": "rmse",
+    "multiplier": 3.0
+  },
+  
+  "processing": {
+    "mov_as_corepoints": true,
+    "use_subsampled_corepoints": 1,
+    "sample_size": 10000,
+    "only_stats": false,
+    "stats_type": "distance",
+    "version": "python"
+  },
+  
+  "output": {
+    "format": "excel",
+    "project_name": "MARS_Multi_Illumination"
+  },
+  
+  "plotting": {
+    "bins": 256,
+    "dpi": 100,
+    "figure_size": [10, 6],
+    "colors": {
+      "CASE1": "#1f77b4",
+      "CASE2": "#ff7f0e",
+      "CASE3": "#2ca02c",
+      "CASE4": "#d62728"
+    }
+  },
+  
+  "visualization": {
+    "enabled": true,
+    "formats": ["png", "ply"],
+    "colormap": "viridis",
+    "histogram": {
+      "bins": 256,
+      "log_scale": false
+    }
+  },
+  
+  "logging": {
+    "level": "INFO",
+    "file": "logs/orchestration.log",
+    "format": "%(asctime)s [%(levelname)-8s] %(name)s - %(message)s",
+    "date_format": "%Y-%m-%d %H:%M:%S",
+    "rotation": "size",
+    "max_bytes": 10485760,
+    "backup_count": 5,
+    "modules": {
+      "matplotlib": "WARNING",
+      "py4dgeo": "WARNING"
+    }
+  },
+  
+  "performance": {
+    "parallel_processing": false,
+    "max_workers": 4,
+    "chunk_size": 1000,
+    "cache_enabled": true
+  },
+  
+  "advanced": {
+    "continue_on_error": true,
+    "validate_inputs": true,
+    "save_intermediate": false,
+    "debug_mode": false
+  }
+}
