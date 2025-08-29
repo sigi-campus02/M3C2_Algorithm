@@ -1,0 +1,10 @@
+2025-08-29 13:38:32 [[32mINFO[0m] shared.logging_setup: ============================================================
+2025-08-29 13:38:32 [[32mINFO[0m] shared.logging_setup: Logging initialized at 2025-08-29 13:38:32
+2025-08-29 13:38:32 [[32mINFO[0m] shared.logging_setup: Log level: INFO
+2025-08-29 13:38:32 [[32mINFO[0m] shared.logging_setup: Log file: C:\Users\sieglinde.hoedl\AI_Mars3D\M3C2_Algorithm\M3C2_Algorithm\orchestration.log
+2025-08-29 13:38:32 [[32mINFO[0m] shared.logging_setup: ============================================================
+2025-08-29 13:38:32 [[32mINFO[0m] __main__: ============================================================
+2025-08-29 13:38:32 [[32mINFO[0m] __main__: M3C2 Pipeline - Refactored Version
+2025-08-29 13:38:32 [[32mINFO[0m] __main__: ============================================================
+2025-08-29 13:38:32 [[33mWARNING[0m] shared.config_loader: Data path does not exist: data
+2025-08-29 13:38:32 [[31mERROR[0m] __main__: No folders specified for processing
