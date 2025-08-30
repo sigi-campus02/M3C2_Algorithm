@@ -1,15 +1,11 @@
 # application/factories/service_factory.py
-"""Service Factory für Dependency Injection"""
+"""Service Factory mit Dependency Injection und Lazy Loading"""
 
 import logging
 from typing import Dict, Any, Optional
 from pathlib import Path
 
-from infrastructure.repositories.file_point_cloud_repository import (
-    FilePointCloudRepository,
-    FileParameterRepository,
-    FileStatisticsRepository
-)
+from domain.entities import OutlierMethod
 from domain.strategies.outlier_detection import (
     OutlierDetectionStrategy,
     RMSEOutlierStrategy,
@@ -17,21 +13,37 @@ from domain.strategies.outlier_detection import (
     IQROutlierStrategy,
     ZScoreOutlierStrategy
 )
-from domain.entities import OutlierMethod
+from infrastructure.repositories.point_cloud_repository import PointCloudRepository
+from infrastructure.repositories.distance_repository import DistanceRepository
+from infrastructure.repositories.file_point_cloud_repository import (
+    FileParameterRepository,
+    FileStatisticsRepository
+)
 
 logger = logging.getLogger(__name__)
 
 
 class ServiceFactory:
-    """Factory für Service-Erstellung mit Dependency Injection"""
+    """
+    Factory für Services mit Lazy Loading und Singleton Pattern.
+
+    Diese Factory verwaltet alle Services und Repositories der Anwendung
+    und stellt sicher, dass jeder Service nur einmal instantiiert wird.
+    """
 
     def __init__(self, config: Dict[str, Any]):
-        self.config = config
-        self._repositories = {}
-        self._services = {}
-        self._strategies = {}
+        """
+        Initialisiert die ServiceFactory mit Konfiguration.
 
-        # Initialisiere Basis-Pfade
+        Args:
+            config: Dictionary mit Konfigurationsparametern
+        """
+        self.config = config
+        self._repositories: Dict[str, Any] = {}
+        self._services: Dict[str, Any] = {}
+        self._strategies: Dict[str, Any] = {}
+
+        # Extrahiere wichtige Pfade aus Config
         self.data_path = Path(config.get('data_path', 'data'))
         self.output_path = Path(config.get('output_path', 'outputs'))
 
@@ -39,40 +51,37 @@ class ServiceFactory:
 
     # ============= Repositories =============
 
-    def get_point_cloud_repository(self) -> FilePointCloudRepository:
-        """Gibt PointCloud Repository zurück (Singleton)"""
-        if 'point_cloud_repo' not in self._repositories:
-            self._repositories['point_cloud_repo'] = FilePointCloudRepository(
-                base_path=str(self.data_path)
-            )
-            logger.debug("Created FilePointCloudRepository")
-        return self._repositories['point_cloud_repo']
+    def get_point_cloud_repository(self) -> PointCloudRepository:
+        """Gibt PointCloudRepository zurück (Singleton)"""
+        if 'point_cloud' not in self._repositories:
+            self._repositories['point_cloud'] = PointCloudRepository(str(self.data_path))
+            logger.debug("Created PointCloudRepository")
+        return self._repositories['point_cloud']
+
+    def get_distance_repository(self) -> DistanceRepository:
+        """Gibt DistanceRepository zurück (Singleton)"""
+        if 'distance' not in self._repositories:
+            self._repositories['distance'] = DistanceRepository(str(self.output_path))
+            logger.debug("Created DistanceRepository")
+        return self._repositories['distance']
 
     def get_parameter_repository(self) -> FileParameterRepository:
-        """Gibt Parameter Repository zurück (Singleton)"""
-        if 'param_repo' not in self._repositories:
-            self._repositories['param_repo'] = FileParameterRepository(
-                base_path=str(self.data_path)
-            )
+        """Gibt FileParameterRepository zurück (Singleton)"""
+        if 'parameter' not in self._repositories:
+            self._repositories['parameter'] = FileParameterRepository(str(self.data_path))
             logger.debug("Created FileParameterRepository")
-        return self._repositories['param_repo']
+        return self._repositories['parameter']
 
     def get_statistics_repository(self) -> FileStatisticsRepository:
-        """Gibt Statistics Repository zurück (Singleton)"""
-        if 'stats_repo' not in self._repositories:
-            self._repositories['stats_repo'] = FileStatisticsRepository(
-                output_path=str(self.output_path)
-            )
+        """Gibt FileStatisticsRepository zurück (Singleton)"""
+        if 'statistics' not in self._repositories:
+            self._repositories['statistics'] = FileStatisticsRepository(str(self.output_path))
             logger.debug("Created FileStatisticsRepository")
-        return self._repositories['stats_repo']
+        return self._repositories['statistics']
 
     def get_result_repository(self):
-        """Gibt Result Repository zurück (verwendet Statistics Repository)"""
-        if 'result_repo' not in self._repositories:
-            # Verwende Statistics Repository als Result Repository vorerst
-            self._repositories['result_repo'] = self.get_statistics_repository()
-            logger.debug("Using StatisticsRepository as ResultRepository")
-        return self._repositories['result_repo']
+        """Alias für distance repository"""
+        return self.get_distance_repository()
 
     # ============= Strategies =============
 
@@ -107,8 +116,8 @@ class ServiceFactory:
     def get_m3c2_runner(self):
         """Gibt M3C2Runner zurück"""
         if 'm3c2_runner' not in self._services:
-            # Importiere den echten M3C2Runner
-            from orchestration.m3c2_runner import M3C2Runner
+            # KORRIGIERT: Richtiger Import-Pfad
+            from application.orchestration.m3c2_runner import M3C2Runner
             self._services['m3c2_runner'] = M3C2Runner()
             logger.debug("Created M3C2Runner")
         return self._services['m3c2_runner']
@@ -116,8 +125,8 @@ class ServiceFactory:
     def get_param_estimator(self):
         """Gibt ParamEstimator zurück"""
         if 'param_estimator' not in self._services:
-            # Importiere den echten ParamEstimator
-            from services.param_estimator import ParamEstimator
+            # KORRIGIERT: Richtiger Import-Pfad
+            from application.services.param_estimator import ParamEstimator
             self._services['param_estimator'] = ParamEstimator()
             logger.debug("Created ParamEstimator")
         return self._services['param_estimator']
@@ -125,8 +134,8 @@ class ServiceFactory:
     def get_statistics_service(self):
         """Gibt StatisticsService zurück"""
         if 'statistics_service' not in self._services:
-            # Importiere den echten StatisticsService
-            from services.statistics_service import StatisticsService
+            # KORRIGIERT: Richtiger Import-Pfad
+            from application.services.statistics_service import StatisticsService
             self._services['statistics_service'] = StatisticsService()
             logger.debug("Created StatisticsService")
         return self._services['statistics_service']
@@ -134,8 +143,8 @@ class ServiceFactory:
     def get_visualization_service(self):
         """Gibt VisualizationService zurück"""
         if 'visualization_service' not in self._services:
-            # Importiere den echten PlotService (als Visualization Service)
-            from services.plot_service import PlotService
+            # KORRIGIERT: Richtiger Import-Pfad
+            from application.services.plot_service import PlotService
             self._services['visualization_service'] = PlotService()
             logger.debug("Created PlotService as VisualizationService")
         return self._services['visualization_service']
@@ -143,11 +152,30 @@ class ServiceFactory:
     def get_plot_service(self):
         """Gibt PlotService zurück"""
         if 'plot_service' not in self._services:
-            from services.plot_service import PlotService
+            # KORRIGIERT: Richtiger Import-Pfad
+            from application.services.plot_service import PlotService
             plot_config = self.config.get('plotting', {})
             self._services['plot_service'] = PlotService()
             logger.debug("Created PlotService")
         return self._services['plot_service']
+
+    def get_export_service(self):
+        """Gibt ExportService zurück"""
+        if 'export_service' not in self._services:
+            # KORRIGIERT: Richtiger Import-Pfad
+            from application.services.export_service import ExportService
+            self._services['export_service'] = ExportService()
+            logger.debug("Created ExportService")
+        return self._services['export_service']
+
+    def get_report_service(self):
+        """Gibt ReportService zurück"""
+        if 'report_service' not in self._services:
+            # KORRIGIERT: Richtiger Import-Pfad
+            from application.services.report_service import ReportService
+            self._services['report_service'] = ReportService()
+            logger.debug("Created ReportService")
+        return self._services['report_service']
 
     def get_cloud_pair_scanner(self):
         """Gibt CloudPairScanner Service zurück (Singleton)."""
@@ -170,13 +198,28 @@ class ServiceFactory:
 
         return self._services['cloud_pair_scanner']
 
+    def get_visualization_service(self):
+        """Gibt VisualizationService zurück"""
+        if 'visualization_service' not in self._services:
+            try:
+                # Versuche erweiterten Service zu laden
+                from application.services.visualization_service import VisualizationService
+                self._services['visualization_service'] = VisualizationService(
+                    repository=self.get_point_cloud_repository()
+                )
+                logger.debug("Created VisualizationService")
+            except ImportError:
+                # Fallback auf normalen Visualization Service
+                logger.warning("VisualizationService not found, using standard VisualizationService")
+                return self.get_visualization_service()
+        return self._services['visualization_service']
+
     # ============= Configuration =============
 
     def get_config_value(self, key: str, default: Any = None) -> Any:
         """Holt einen Konfigurationswert"""
         keys = key.split('.')
         value = self.config
-
         for k in keys:
             if isinstance(value, dict):
                 value = value.get(k)
@@ -184,25 +227,17 @@ class ServiceFactory:
                     return default
             else:
                 return default
-
         return value
 
-    def update_config(self, key: str, value: Any) -> None:
-        """Aktualisiert einen Konfigurationswert"""
-        keys = key.split('.')
-        config = self.config
+    # ============= Cleanup =============
 
-        for k in keys[:-1]:
-            if k not in config:
-                config[k] = {}
-            config = config[k]
-
-        config[keys[-1]] = value
-        logger.debug(f"Updated config: {key} = {value}")
-
-    def reset_services(self) -> None:
-        """Setzt alle Services zurück (für Tests)"""
+    def reset(self):
+        """Setzt alle Services und Repositories zurück"""
         self._repositories.clear()
         self._services.clear()
         self._strategies.clear()
         logger.info("Reset all services and repositories")
+
+    def __del__(self):
+        """Cleanup bei Zerstörung"""
+        self.reset()

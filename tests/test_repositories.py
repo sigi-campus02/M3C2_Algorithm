@@ -10,7 +10,7 @@ import os
 import shutil
 
 # Correct imports based on actual implementation
-from infrastructure.repositories.enhanced_point_cloud_repository import EnhancedPointCloudRepository
+from infrastructure.repositories.point_cloud_repository import EnhancedPointCloudRepository
 from infrastructure.repositories.distance_repository import DistanceRepository
 from infrastructure.repositories.file_point_cloud_repository import (
     FilePointCloudRepository,
@@ -24,7 +24,7 @@ try:
     from domain.entities import PointCloud
 except ImportError:
     # Use the actual entity that exists
-    from infrastructure.repositories.enhanced_point_cloud_repository import PointCloud
+    from infrastructure.repositories.point_cloud_repository import PointCloud
 
 from domain.entities import (
     CloudPair,
@@ -350,7 +350,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import numpy as np
 
 # Now imports should work
-from infrastructure.repositories.enhanced_point_cloud_repository import EnhancedPointCloudRepository
+from infrastructure.repositories.point_cloud_repository import EnhancedPointCloudRepository
 from infrastructure.repositories.distance_repository import DistanceRepository
 from infrastructure.repositories.file_point_cloud_repository import FileParameterRepository
 from domain.entities import CloudPair, M3C2Parameters

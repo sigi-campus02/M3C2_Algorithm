@@ -97,7 +97,7 @@ def example_visualization_pipeline():
 def example_txt_to_ply_conversion():
     """Beispiel: Konvertiere bestehende TXT-Dateien zu PLY"""
     
-    from application.services.enhanced_visualization_service import EnhancedVisualizationService
+    from application.services.visualization_service import EnhancedVisualizationService
     
     viz_service = EnhancedVisualizationService()
     
@@ -127,7 +127,7 @@ def example_txt_to_ply_conversion():
 def example_custom_visualization():
     """Beispiel: Benutzerdefinierte Visualisierung"""
     
-    from application.services.enhanced_visualization_service import EnhancedVisualizationService
+    from application.services.visualization_service import EnhancedVisualizationService
     
     viz_service = EnhancedVisualizationService()
     

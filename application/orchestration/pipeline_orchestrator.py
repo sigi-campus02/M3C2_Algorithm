@@ -300,11 +300,11 @@ class PipelineOrchestrator:
         failed = len(self.failed_configs)
 
         logger.info(f"Total configurations: {total}")
-        logger.info(f"  ✓ Successful: {successful}")
+        logger.info(f"  [OK] Successful: {successful}")
         if partial > 0:
-            logger.info(f"  ⚠ Partial success: {partial}")
+            logger.info(f"  Partial success: {partial}")
         if failed > 0:
-            logger.info(f"  ✗ Failed: {failed}")
+            logger.info(f"  [FAIL] Failed: {failed}")
 
         # Zeige Ausführungszeiten
         if self.results:

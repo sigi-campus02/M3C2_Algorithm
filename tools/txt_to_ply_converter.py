@@ -24,7 +24,7 @@ logger = logging.getLogger("txt_to_ply")
 # Try to use project's visualization service if available
 try:
     sys.path.insert(0, str(Path(__file__).parent.parent))
-    from application.services.enhanced_visualization_service import EnhancedVisualizationService
+    from application.services.visualization_service import EnhancedVisualizationService
     USE_SERVICE = True
     logger.info("Using EnhancedVisualizationService for conversion")
 except ImportError:

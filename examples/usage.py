@@ -5,7 +5,7 @@ import numpy as np
 from pathlib import Path
 
 # Repository Imports
-from infrastructure.repositories.enhanced_point_cloud_repository import EnhancedPointCloudRepository
+from infrastructure.repositories.point_cloud_repository import EnhancedPointCloudRepository
 from infrastructure.repositories.distance_repository import DistanceRepository
 from infrastructure.repositories.file_point_cloud_repository import FileParameterRepository
 

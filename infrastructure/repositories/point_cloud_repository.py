@@ -1,4 +1,4 @@
-# New_Architecture/infrastructure/repositories/enhanced_point_cloud_repository.py
+# New_Architecture/infrastructure/repositories/point_cloud_repository.py
 """Erweiterte Repository-Implementierung mit Multi-Format Support"""
 
 import os
@@ -25,7 +25,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-class EnhancedPointCloudRepository:
+class PointCloudRepository:
     """
     Erweiterte Repository-Implementierung mit Support für:
     - XYZ (Standard ASCII)
