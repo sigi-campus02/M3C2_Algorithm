@@ -116,7 +116,6 @@ class ServiceFactory:
     def get_m3c2_runner(self):
         """Gibt M3C2Runner zurück"""
         if 'm3c2_runner' not in self._services:
-            # KORRIGIERT: Richtiger Import-Pfad
             from application.orchestration.m3c2_runner import M3C2Runner
             self._services['m3c2_runner'] = M3C2Runner()
             logger.debug("Created M3C2Runner")
@@ -125,7 +124,6 @@ class ServiceFactory:
     def get_param_estimator(self):
         """Gibt ParamEstimator zurück"""
         if 'param_estimator' not in self._services:
-            # KORRIGIERT: Richtiger Import-Pfad
             from application.services.param_estimator import ParamEstimator
             self._services['param_estimator'] = ParamEstimator()
             logger.debug("Created ParamEstimator")
@@ -134,7 +132,6 @@ class ServiceFactory:
     def get_statistics_service(self):
         """Gibt StatisticsService zurück"""
         if 'statistics_service' not in self._services:
-            # KORRIGIERT: Richtiger Import-Pfad
             from application.services.statistics_service import StatisticsService
             self._services['statistics_service'] = StatisticsService()
             logger.debug("Created StatisticsService")
@@ -143,16 +140,24 @@ class ServiceFactory:
     def get_visualization_service(self):
         """Gibt VisualizationService zurück"""
         if 'visualization_service' not in self._services:
-            # KORRIGIERT: Richtiger Import-Pfad
-            from application.services.plot_service import PlotService
-            self._services['visualization_service'] = PlotService()
-            logger.debug("Created PlotService as VisualizationService")
+            try:
+                # Versuche erweiterten Service zu laden
+                from application.services.visualization_service import VisualizationService
+                self._services['visualization_service'] = VisualizationService(
+                    repository=self.get_point_cloud_repository()
+                )
+                logger.debug("Created VisualizationService")
+            except ImportError:
+                # Fallback auf PlotService
+                logger.warning("VisualizationService not found, using PlotService")
+                from application.services.plot_service import PlotService
+                self._services['visualization_service'] = PlotService()
+                logger.debug("Created PlotService as VisualizationService")
         return self._services['visualization_service']
 
     def get_plot_service(self):
         """Gibt PlotService zurück"""
         if 'plot_service' not in self._services:
-            # KORRIGIERT: Richtiger Import-Pfad
             from application.services.plot_service import PlotService
             plot_config = self.config.get('plotting', {})
             self._services['plot_service'] = PlotService()
@@ -162,7 +167,6 @@ class ServiceFactory:
     def get_export_service(self):
         """Gibt ExportService zurück"""
         if 'export_service' not in self._services:
-            # KORRIGIERT: Richtiger Import-Pfad
             from application.services.export_service import ExportService
             self._services['export_service'] = ExportService()
             logger.debug("Created ExportService")
@@ -171,7 +175,6 @@ class ServiceFactory:
     def get_report_service(self):
         """Gibt ReportService zurück"""
         if 'report_service' not in self._services:
-            # KORRIGIERT: Richtiger Import-Pfad
             from application.services.report_service import ReportService
             self._services['report_service'] = ReportService()
             logger.debug("Created ReportService")
@@ -197,22 +200,6 @@ class ServiceFactory:
             logger.debug("Created CloudPairScanner service")
 
         return self._services['cloud_pair_scanner']
-
-    def get_visualization_service(self):
-        """Gibt VisualizationService zurück"""
-        if 'visualization_service' not in self._services:
-            try:
-                # Versuche erweiterten Service zu laden
-                from application.services.visualization_service import VisualizationService
-                self._services['visualization_service'] = VisualizationService(
-                    repository=self.get_point_cloud_repository()
-                )
-                logger.debug("Created VisualizationService")
-            except ImportError:
-                # Fallback auf normalen Visualization Service
-                logger.warning("VisualizationService not found, using standard VisualizationService")
-                return self.get_visualization_service()
-        return self._services['visualization_service']
 
     # ============= Configuration =============
 

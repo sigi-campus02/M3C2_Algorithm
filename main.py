@@ -326,7 +326,7 @@ def main():
         sys.exit(1)
     finally:
         # Cleanup
-        service_factory.reset_services()
+        service_factory.reset()  # Nicht reset_services()!
         logger.info("Services cleaned up")
 
 
