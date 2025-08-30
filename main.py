@@ -103,23 +103,23 @@ def parse_arguments():
     )
 
     parser.add_argument(
+        '--format',
+        choices=['excel', 'csv', 'json', 'all'],
+        default='excel',
+        help='Output format'
+    )
+
+    parser.add_argument(
         '-p', '--project',
         type=str,
-        default='default_project',
+        default='M3C2_Results',
         help='Project name for outputs'
     )
 
-    parser.add_argument(
-        '--format',
-        choices=['excel', 'json', 'csv'],
-        default='excel',
-        help='Output format for statistics'
-    )
-
-    # Logging
+    # Logging-Optionen
     parser.add_argument(
         '--log-level',
-        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'],
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
         default='INFO',
         help='Logging level'
     )
@@ -130,7 +130,7 @@ def parse_arguments():
         help='Log file path'
     )
 
-    # Andere
+    # Execution-Optionen
     parser.add_argument(
         '--dry-run',
         action='store_true',
@@ -138,136 +138,131 @@ def parse_arguments():
     )
 
     parser.add_argument(
-        '--version',
-        action='version',
-        version='M3C2 Pipeline v2.0.0 (Refactored)'
+        '--parallel',
+        action='store_true',
+        help='Enable parallel processing'
+    )
+
+    parser.add_argument(
+        '--continue-on-error',
+        action='store_true',
+        default=True,
+        help='Continue processing even if some pipelines fail'
+    )
+
+    # Visualisierung
+    parser.add_argument(
+        '--plots',
+        action='store_true',
+        help='Generate visualization plots'
     )
 
     return parser.parse_args()
 
 
-def scan_for_cloud_pairs(folder_path: Path, indices: Optional[List[int]] = None) -> List[CloudPair]:
+def scan_for_cloud_pairs(
+        folder_path: Path,
+        indices: Optional[List[int]] = None
+) -> List[CloudPair]:
     """
-    Scannt einen Ordner nach Punktwolken-Paaren.
+    Scannt einen Ordner nach CloudPairs.
 
     Args:
         folder_path: Pfad zum Ordner
-        indices: Spezifische Indizes (optional)
+        indices: Optionale Liste von Indizes
 
     Returns:
-        Liste von CloudPair-Objekten
+        Liste von CloudPairs
     """
-    logger.info(f"Scanning folder: {folder_path.name}")
-
-    # Finde alle Punktwolken-Dateien
-    extensions = ['.ply', '.xyz', '.las', '.laz', '.txt']
-    cloud_files = []
-
-    for ext in extensions:
-        cloud_files.extend(folder_path.glob(f"*{ext}"))
-
-    # Parse Dateinamen
-    a_plain = {}  # a-{index}
-    a_ai = {}  # a-{index}-AI
-    b_plain = {}  # b-{index}
-    b_ai = {}  # b-{index}-AI
-
-    for file in cloud_files:
-        name = file.stem
-
-        # Parse Index und Typ
-        if name.startswith('a-') and not name.endswith('-AI'):
-            try:
-                index = int(name.split('-')[1])
-                if indices is None or index in indices:
-                    a_plain[index] = name
-            except (IndexError, ValueError):
-                continue
-
-        elif name.startswith('a-') and name.endswith('-AI'):
-            try:
-                index = int(name.split('-')[1])
-                if indices is None or index in indices:
-                    a_ai[index] = name
-            except (IndexError, ValueError):
-                continue
-
-        elif name.startswith('b-') and not name.endswith('-AI'):
-            try:
-                index = int(name.split('-')[1])
-                if indices is None or index in indices:
-                    b_plain[index] = name
-            except (IndexError, ValueError):
-                continue
-
-        elif name.startswith('b-') and name.endswith('-AI'):
-            try:
-                index = int(name.split('-')[1])
-                if indices is None or index in indices:
-                    b_ai[index] = name
-            except (IndexError, ValueError):
-                continue
-
-    # Log gefundene Dateien
-    logger.info(f"  a_plain: {len(a_plain)} files (indices: {sorted(a_plain.keys())})")
-    logger.info(f"  a_ai: {len(a_ai)} files (indices: {sorted(a_ai.keys())})")
-    logger.info(f"  b_plain: {len(b_plain)} files (indices: {sorted(b_plain.keys())})")
-    logger.info(f"  b_ai: {len(b_ai)} files (indices: {sorted(b_ai.keys())})")
-
-    # Erstelle CloudPairs für alle möglichen Kombinationen
     cloud_pairs = []
-    all_indices = set(a_plain.keys()) | set(a_ai.keys()) | set(b_plain.keys()) | set(b_ai.keys())
 
-    for idx in sorted(all_indices):
-        # Case 1: ai_vs_ai (a-i-AI vs b-i-AI)
-        if idx in a_ai and idx in b_ai:
-            cloud_pairs.append(CloudPair(
-                moving_cloud=a_ai[idx],
-                reference_cloud=b_ai[idx],
-                folder_id=folder_path.name,
-                comparison_case=ComparisonCase.CASE4,
-                index=idx
-            ))
+    # Finde alle PLY-Dateien
+    ply_files = list(folder_path.glob('*.ply'))
 
-        # Case 2: ai_vs_plain (a-i-AI vs b-i)
-        if idx in a_ai and idx in b_plain:
-            cloud_pairs.append(CloudPair(
-                moving_cloud=a_ai[idx],
-                reference_cloud=b_plain[idx],
-                folder_id=folder_path.name,
-                comparison_case=ComparisonCase.CASE3,
-                index=idx
-            ))
+    if not ply_files:
+        logger.warning(f"No PLY files found in {folder_path}")
+        return cloud_pairs
 
-        # Case 3: plain_vs_ai (a-i vs b-i-AI)
-        if idx in a_plain and idx in b_ai:
-            cloud_pairs.append(CloudPair(
-                moving_cloud=a_plain[idx],
-                reference_cloud=b_ai[idx],
-                folder_id=folder_path.name,
-                comparison_case=ComparisonCase.CASE2,
-                index=idx
-            ))
+    # Gruppiere nach Präfix
+    groups = {}
+    for file in ply_files:
+        # Extrahiere Präfix (z.B. 'a_plain', 'b_ai')
+        parts = file.stem.split('-')
+        if len(parts) >= 2:
+            prefix = parts[0]
+            try:
+                index = int(parts[1])
+                if indices and index not in indices:
+                    continue
 
-        # Case 4: plain_vs_plain (a-i vs b-i)
-        if idx in a_plain and idx in b_plain:
-            cloud_pairs.append(CloudPair(
-                moving_cloud=a_plain[idx],
-                reference_cloud=b_plain[idx],
-                folder_id=folder_path.name,
-                comparison_case=ComparisonCase.CASE1,
-                index=idx
-            ))
+                if prefix not in groups:
+                    groups[prefix] = []
+                groups[prefix].append((index, file))
+            except ValueError:
+                logger.debug(f"Skipping file with non-numeric index: {file}")
+
+    # Log gefundene Gruppen
+    for prefix, files in groups.items():
+        logger.info(f"  {prefix}: {len(files)} files (indices: {[f[0] for f in files]})")
+
+    # Erstelle CloudPairs für alle Kombinationen
+    prefixes = sorted(groups.keys())
+    comparison_cases = {
+        ('a_ai', 'b_ai'): ComparisonCase.AI_VS_AI,
+        ('a_ai', 'b_plain'): ComparisonCase.AI_VS_PLAIN,
+        ('a_plain', 'b_ai'): ComparisonCase.PLAIN_VS_AI,
+        ('a_plain', 'b_plain'): ComparisonCase.PLAIN_VS_PLAIN,
+    }
+
+    # Zähler für Vergleichsfälle
+    case_counts = {case: 0 for case in ComparisonCase}
+
+    for i, prefix1 in enumerate(prefixes):
+        for prefix2 in prefixes[i + 1:]:
+            # Bestimme Vergleichsfall
+            case_key = (prefix1, prefix2)
+            if case_key not in comparison_cases:
+                # Versuche umgekehrte Reihenfolge
+                case_key = (prefix2, prefix1)
+
+            if case_key not in comparison_cases:
+                logger.debug(f"No comparison case for {prefix1} vs {prefix2}")
+                continue
+
+            comparison_case = comparison_cases[case_key]
+
+            # Finde gemeinsame Indizes
+            indices1 = {idx for idx, _ in groups[prefix1]}
+            indices2 = {idx for idx, _ in groups[prefix2]}
+            common_indices = indices1 & indices2
+
+            # Erstelle Pairs für gemeinsame Indizes
+            for idx in sorted(common_indices):
+                file1 = next(f for i, f in groups[prefix1] if i == idx)
+                file2 = next(f for i, f in groups[prefix2] if i == idx)
+
+                # Bestimme mov/ref basierend auf Reihenfolge
+                if case_key[0] == prefix1:
+                    mov_file, ref_file = file1, file2
+                else:
+                    mov_file, ref_file = file2, file1
+
+                cloud_pair = CloudPair(
+                    mov=str(mov_file.name),
+                    ref=str(ref_file.name),
+                    tag=f"{mov_file.stem}-{ref_file.stem}",
+                    folder_id=folder_path.name,
+                    comparison_case=comparison_case
+                )
+                cloud_pairs.append(cloud_pair)
+                case_counts[comparison_case] += 1
 
     # Log Zusammenfassung
-    case_counts = {}
-    for pair in cloud_pairs:
-        case = pair.comparison_case.value
-        case_counts[case] = case_counts.get(case, 0) + 1
-
-    logger.info(f"  Created {len(cloud_pairs)} cloud pairs")
-    for case, count in sorted(case_counts.items()):
-        logger.info(f"    {case}: {count} pairs")
+    if cloud_pairs:
+        logger.info(f"  Created {len(cloud_pairs)} cloud pairs")
+        for case, count in case_counts.items():
+            if count > 0:
+                logger.info(f"    {case.value}: {count} pairs")
 
     return cloud_pairs
 
@@ -322,10 +317,10 @@ def main():
     # Parse Argumente
     args = parse_arguments()
 
-    # Setup Logging
+    # Setup Logging - KORRIGIERT: level statt log_level
     log_file = args.log_file or 'logs/orchestration.log'
     setup_logging(
-        log_level=getattr(logging, args.log_level),
+        level=args.log_level,  # Korrigiert von log_level zu level
         log_file=log_file
     )
 
@@ -349,6 +344,7 @@ def main():
             logger.warning(f"Folder not found: {folder_path}")
             continue
 
+        logger.info(f"Scanning folder: {folder_name}")
         pairs = scan_for_cloud_pairs(folder_path, args.indices)
         cloud_pairs.extend(pairs)
 
@@ -382,8 +378,8 @@ def main():
     try:
         orchestrator.run_batch(
             pipeline_configs,
-            parallel=False,  # Noch nicht implementiert
-            continue_on_error=config.get('advanced', {}).get('continue_on_error', True)
+            parallel=args.parallel,
+            continue_on_error=args.continue_on_error
         )
 
         # Zeige Zusammenfassung
