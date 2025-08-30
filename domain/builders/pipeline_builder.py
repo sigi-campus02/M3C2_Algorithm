@@ -81,7 +81,11 @@ class PipelineBuilder:
         """Setzt den Projektnamen"""
         self._project_name = project_name
         return self
-    
+
+    def with_folder_id(self, folder_id):
+        self._config['folder_id'] = folder_id
+        return self
+
     def with_version(self, version: ProcessingVersion) -> 'PipelineBuilder':
         """Setzt die Processing-Version"""
         self._version = version
