@@ -41,3 +41,16 @@
 2025-08-30 17:40:07 [[32mINFO[0m] __main__ - ============================================================
 2025-08-30 17:40:07 [[32mINFO[0m] __main__ - M3C2 Pipeline - Refactored Version
 2025-08-30 17:40:07 [[32mINFO[0m] __main__ - ============================================================
+2025-08-30 17:42:04 [[32mINFO[0m] shared.logging_setup - ============================================================
+2025-08-30 17:42:04 [[32mINFO[0m] shared.logging_setup - Logging initialized at 2025-08-30 17:42:04
+2025-08-30 17:42:04 [[32mINFO[0m] shared.logging_setup - Log level: INFO
+2025-08-30 17:42:04 [[32mINFO[0m] shared.logging_setup - Log file: C:\Users\siegl\OneDrive\09 Sonstiges\M3C2_Algorithm\logs\orchestration.log
+2025-08-30 17:42:04 [[32mINFO[0m] shared.logging_setup - ============================================================
+2025-08-30 17:42:04 [[32mINFO[0m] __main__ - ============================================================
+2025-08-30 17:42:04 [[32mINFO[0m] __main__ - M3C2 Pipeline - Refactored Version
+2025-08-30 17:42:04 [[32mINFO[0m] __main__ - ============================================================
+2025-08-30 17:42:04 [[32mINFO[0m] shared.config_loader - Loaded JSON config from config.json
+2025-08-30 17:42:04 [[32mINFO[0m] shared.config_loader - Configuration loaded: ['data_path', 'output_path', 'm3c2', 'outlier_detection', 'processing', 'output', 'plotting', 'logging', 'folder_ids', 'visualization', 'performance', 'advanced']
+2025-08-30 17:42:04 [[32mINFO[0m] __main__ - Scanning folder: Multi-Illumination
+2025-08-30 17:42:04 [[33mWARNING[0m] __main__ - No PLY files found in data\Multi-Illumination
+2025-08-30 17:42:04 [[31mERROR[0m] __main__ - No cloud pairs found to process

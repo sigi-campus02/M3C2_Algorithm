@@ -329,8 +329,8 @@ def main():
     logger.info("=" * 60)
 
     # Lade Konfiguration
-    from shared.config_loader import load_config
-    config = load_config(args.config)
+    from shared.config_loader import ConfigLoader
+    config = ConfigLoader.load(args.config)
     config['data_path'] = args.data_dir
     config['output_path'] = args.output_dir
 
