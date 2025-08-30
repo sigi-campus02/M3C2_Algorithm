@@ -52,16 +52,17 @@ class CloudPairScanner:
 
     def _init_comparison_cases(self):
         """Initialisiert die Mapping-Tabelle für Vergleichsfälle"""
+        # Verwende die tatsächlichen Enum-Werte aus domain/entities.py
         self.comparison_cases = {
-            ('a_ai', 'b_ai'): ComparisonCase.AI_VS_AI,
-            ('a_ai', 'b_plain'): ComparisonCase.AI_VS_PLAIN,
-            ('a_plain', 'b_ai'): ComparisonCase.PLAIN_VS_AI,
-            ('a_plain', 'b_plain'): ComparisonCase.PLAIN_VS_PLAIN,
+            ('a_ai', 'b_ai'): ComparisonCase.CASE4,  # ai_vs_ai
+            ('a_ai', 'b_plain'): ComparisonCase.CASE3,  # ai_vs_plain
+            ('a_plain', 'b_ai'): ComparisonCase.CASE2,  # plain_vs_ai
+            ('a_plain', 'b_plain'): ComparisonCase.CASE1,  # plain_vs_plain
             # Umgekehrte Reihenfolgen
-            ('b_ai', 'a_ai'): ComparisonCase.AI_VS_AI,
-            ('b_plain', 'a_ai'): ComparisonCase.AI_VS_PLAIN,
-            ('b_ai', 'a_plain'): ComparisonCase.PLAIN_VS_AI,
-            ('b_plain', 'a_plain'): ComparisonCase.PLAIN_VS_PLAIN,
+            ('b_ai', 'a_ai'): ComparisonCase.CASE4,  # ai_vs_ai
+            ('b_plain', 'a_ai'): ComparisonCase.CASE2,  # plain_vs_ai (b_plain vs a_ai)
+            ('b_ai', 'a_plain'): ComparisonCase.CASE3,  # ai_vs_plain (b_ai vs a_plain)
+            ('b_plain', 'a_plain'): ComparisonCase.CASE1,  # plain_vs_plain
         }
 
     def scan_folder(
@@ -288,11 +289,11 @@ class CloudPairScanner:
                 mov_file, ref_file = file2, file1
 
             cloud_pair = CloudPair(
-                mov=str(mov_file.name),
-                ref=str(ref_file.name),
-                tag=f"{mov_file.stem}-{ref_file.stem}",
+                moving_cloud=str(mov_file.name),
+                reference_cloud=str(ref_file.name),
                 folder_id=folder_id,
-                comparison_case=comparison_case
+                comparison_case=comparison_case,
+                index=idx  # Füge den Index hinzu
             )
             pairs.append(cloud_pair)
 
