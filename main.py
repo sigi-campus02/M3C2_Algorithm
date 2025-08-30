@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 # main.py
-"""Haupteinstiegspunkt für M3C2 Pipeline - Refactored Version"""
+"""Haupteinstiegspunkt für M3C2 Pipeline - Clean Architecture Version"""
 
 import sys
 import logging
 import argparse
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 from shared.logging_setup import setup_logging
 from application.factories.service_factory import ServiceFactory
 from application.factories.pipeline_factory import PipelineFactory
 from application.orchestration.pipeline_orchestrator import PipelineOrchestrator
 from domain.builders.pipeline_builder import PipelineBuilder
-from domain.entities import CloudPair, ComparisonCase, OutlierMethod, M3C2Parameters
+from domain.entities import CloudPair, OutlierMethod, M3C2Parameters
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 def parse_arguments():
     """Parse command line arguments"""
     parser = argparse.ArgumentParser(
-        description='M3C2 Pipeline - Refactored Version',
+        description='M3C2 Pipeline - Refactored Clean Architecture',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
@@ -160,124 +160,26 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def scan_for_cloud_pairs(
-        folder_path: Path,
-        indices: Optional[List[int]] = None
-) -> List[CloudPair]:
-    """
-    Scannt einen Ordner nach CloudPairs.
-
-    Args:
-        folder_path: Pfad zum Ordner
-        indices: Optionale Liste von Indizes
-
-    Returns:
-        Liste von CloudPairs
-    """
-    cloud_pairs = []
-
-    # Finde alle PLY-Dateien
-    ply_files = list(folder_path.glob('*.ply'))
-
-    if not ply_files:
-        logger.warning(f"No PLY files found in {folder_path}")
-        return cloud_pairs
-
-    # Gruppiere nach Präfix
-    groups = {}
-    for file in ply_files:
-        # Extrahiere Präfix (z.B. 'a_plain', 'b_ai')
-        parts = file.stem.split('-')
-        if len(parts) >= 2:
-            prefix = parts[0]
-            try:
-                index = int(parts[1])
-                if indices and index not in indices:
-                    continue
-
-                if prefix not in groups:
-                    groups[prefix] = []
-                groups[prefix].append((index, file))
-            except ValueError:
-                logger.debug(f"Skipping file with non-numeric index: {file}")
-
-    # Log gefundene Gruppen
-    for prefix, files in groups.items():
-        logger.info(f"  {prefix}: {len(files)} files (indices: {[f[0] for f in files]})")
-
-    # Erstelle CloudPairs für alle Kombinationen
-    prefixes = sorted(groups.keys())
-    comparison_cases = {
-        ('a_ai', 'b_ai'): ComparisonCase.AI_VS_AI,
-        ('a_ai', 'b_plain'): ComparisonCase.AI_VS_PLAIN,
-        ('a_plain', 'b_ai'): ComparisonCase.PLAIN_VS_AI,
-        ('a_plain', 'b_plain'): ComparisonCase.PLAIN_VS_PLAIN,
-    }
-
-    # Zähler für Vergleichsfälle
-    case_counts = {case: 0 for case in ComparisonCase}
-
-    for i, prefix1 in enumerate(prefixes):
-        for prefix2 in prefixes[i + 1:]:
-            # Bestimme Vergleichsfall
-            case_key = (prefix1, prefix2)
-            if case_key not in comparison_cases:
-                # Versuche umgekehrte Reihenfolge
-                case_key = (prefix2, prefix1)
-
-            if case_key not in comparison_cases:
-                logger.debug(f"No comparison case for {prefix1} vs {prefix2}")
-                continue
-
-            comparison_case = comparison_cases[case_key]
-
-            # Finde gemeinsame Indizes
-            indices1 = {idx for idx, _ in groups[prefix1]}
-            indices2 = {idx for idx, _ in groups[prefix2]}
-            common_indices = indices1 & indices2
-
-            # Erstelle Pairs für gemeinsame Indizes
-            for idx in sorted(common_indices):
-                file1 = next(f for i, f in groups[prefix1] if i == idx)
-                file2 = next(f for i, f in groups[prefix2] if i == idx)
-
-                # Bestimme mov/ref basierend auf Reihenfolge
-                if case_key[0] == prefix1:
-                    mov_file, ref_file = file1, file2
-                else:
-                    mov_file, ref_file = file2, file1
-
-                cloud_pair = CloudPair(
-                    mov=str(mov_file.name),
-                    ref=str(ref_file.name),
-                    tag=f"{mov_file.stem}-{ref_file.stem}",
-                    folder_id=folder_path.name,
-                    comparison_case=comparison_case
-                )
-                cloud_pairs.append(cloud_pair)
-                case_counts[comparison_case] += 1
-
-    # Log Zusammenfassung
-    if cloud_pairs:
-        logger.info(f"  Created {len(cloud_pairs)} cloud pairs")
-        for case, count in case_counts.items():
-            if count > 0:
-                logger.info(f"    {case.value}: {count} pairs")
-
-    return cloud_pairs
-
-
 def create_pipeline_configurations(
         cloud_pairs: List[CloudPair],
         args: argparse.Namespace,
         config: dict
 ) -> List:
-    """Erstellt Pipeline-Konfigurationen aus CloudPairs und Argumenten"""
+    """
+    Erstellt Pipeline-Konfigurationen aus CloudPairs und Argumenten.
+
+    Args:
+        cloud_pairs: Liste von CloudPair-Objekten
+        args: Command-line Argumente
+        config: Konfigurationsdictionary
+
+    Returns:
+        Liste von PipelineConfiguration-Objekten
+    """
     configurations = []
-    builder = PipelineBuilder()
 
     for cloud_pair in cloud_pairs:
-        # Reset Builder für jede Konfiguration
+        # Verwende Builder Pattern für saubere Konfiguration
         builder = PipelineBuilder()
 
         # Basis-Konfiguration
@@ -304,7 +206,8 @@ def create_pipeline_configurations(
         cfg = cfg.with_options({
             'only_stats': args.only_stats,
             'use_existing_params': args.use_existing_params,
-            'output_base_path': Path(args.output_dir) / f"{args.project}_output"
+            'output_base_path': Path(args.output_dir) / f"{args.project}_output",
+            'generate_plots': args.plots
         })
 
         configurations.append(cfg.build())
@@ -313,19 +216,28 @@ def create_pipeline_configurations(
 
 
 def main():
-    """Hauptfunktion"""
+    """
+    Hauptfunktion - Orchestriert die gesamte Pipeline-Ausführung.
+
+    Diese Funktion:
+    1. Parst Command-line Argumente
+    2. Lädt Konfiguration
+    3. Scannt nach CloudPairs
+    4. Erstellt Pipeline-Konfigurationen
+    5. Führt Pipelines aus
+    """
     # Parse Argumente
     args = parse_arguments()
 
-    # Setup Logging - KORRIGIERT: level statt log_level
+    # Setup Logging
     log_file = args.log_file or 'logs/orchestration.log'
     setup_logging(
-        level=args.log_level,  # Korrigiert von log_level zu level
+        level=args.log_level,
         log_file=log_file
     )
 
     logger.info("=" * 60)
-    logger.info("M3C2 Pipeline - Refactored Version")
+    logger.info("M3C2 Pipeline - Clean Architecture")
     logger.info("=" * 60)
 
     # Lade Konfiguration
@@ -334,28 +246,34 @@ def main():
     config['data_path'] = args.data_dir
     config['output_path'] = args.output_dir
 
+    # Initialisiere Service Factory
+    service_factory = ServiceFactory(config)
+
+    # Hole CloudPairScanner Service
+    scanner = service_factory.get_cloud_pair_scanner()
+
     # Scanne nach CloudPairs
-    cloud_pairs = []
+    base_path = Path(args.data_dir)
     folders = args.folders or config.get('folder_ids', ['Multi-Illumination'])
 
+    all_cloud_pairs = []
     for folder_name in folders:
-        folder_path = Path(args.data_dir) / folder_name
+        folder_path = base_path / folder_name
         if not folder_path.exists():
             logger.warning(f"Folder not found: {folder_path}")
             continue
 
-        logger.info(f"Scanning folder: {folder_name}")
-        pairs = scan_for_cloud_pairs(folder_path, args.indices)
-        cloud_pairs.extend(pairs)
+        cloud_pairs = scanner.scan_folder(folder_path, args.indices)
+        all_cloud_pairs.extend(cloud_pairs)
 
-    if not cloud_pairs:
+    if not all_cloud_pairs:
         logger.error("No cloud pairs found to process")
         sys.exit(1)
 
-    logger.info(f"Total cloud pairs to process: {len(cloud_pairs)}")
+    logger.info(f"Total cloud pairs to process: {len(all_cloud_pairs)}")
 
     # Erstelle Pipeline-Konfigurationen
-    pipeline_configs = create_pipeline_configurations(cloud_pairs, args, config)
+    pipeline_configs = create_pipeline_configurations(all_cloud_pairs, args, config)
     logger.info(f"Created {len(pipeline_configs)} pipeline configurations")
 
     # Dry-Run Check
@@ -363,12 +281,13 @@ def main():
         logger.info("DRY RUN MODE - Showing what would be processed:")
         for i, cfg in enumerate(pipeline_configs, 1):
             logger.info(
-                f"  [{i}] {cfg.cloud_pair.folder_id}: {cfg.cloud_pair.tag} ({cfg.cloud_pair.comparison_case.value})")
+                f"  [{i}] {cfg.cloud_pair.folder_id}: "
+                f"{cfg.cloud_pair.tag} ({cfg.cloud_pair.comparison_case.value})"
+            )
         logger.info("Exiting (dry run)")
         sys.exit(0)
 
-    # Erstelle Service Factory und Orchestrator
-    service_factory = ServiceFactory(config)
+    # Erstelle Pipeline Factory und Orchestrator
     pipeline_factory = PipelineFactory(service_factory)
     orchestrator = PipelineOrchestrator(service_factory, pipeline_factory)
 

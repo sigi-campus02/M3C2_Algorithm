@@ -79,5 +79,16 @@
     "validate_inputs": true,
     "save_intermediate": false,
     "debug_mode": false
+  },
+
+  "scanner": {
+    "supported_formats": ["*.laz", "*.las", "*.ply", "*.xyz"],
+    "naming_conventions": {
+      "ai_suffix": "AI",
+      "plain_suffix": "plain",
+      "separator": "-"
+    }
   }
 }
+
+

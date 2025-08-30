@@ -5,6 +5,7 @@ import logging
 from typing import Dict, Any, Optional
 from pathlib import Path
 
+from application.services.cloud_pair_scanner import CloudPairScanner
 from infrastructure.repositories.file_point_cloud_repository import (
     FilePointCloudRepository,
     FileParameterRepository,
@@ -180,3 +181,29 @@ class ServiceFactory:
         self._services.clear()
         self._strategies.clear()
         logger.info("Reset all services and repositories")
+
+    def get_cloud_pair_scanner(self):
+        """
+        Gibt CloudPairScanner Service zurück (Singleton).
+
+        Returns:
+            CloudPairScanner Instanz
+        """
+        if 'cloud_pair_scanner' not in self._services:
+            from application.services.cloud_pair_scanner import CloudPairScanner, ScannerConfig
+
+            # Erstelle Scanner-Konfiguration
+            scanner_config = ScannerConfig()
+
+            # Überschreibe mit custom config wenn vorhanden
+            if 'scanner' in self.config:
+                scanner_settings = self.config['scanner']
+                if 'supported_formats' in scanner_settings:
+                    scanner_config.supported_formats = scanner_settings['supported_formats']
+                if 'naming_conventions' in scanner_settings:
+                    scanner_config.naming_conventions.update(scanner_settings['naming_conventions'])
+
+            self._services['cloud_pair_scanner'] = CloudPairScanner(scanner_config)
+            logger.debug("Created CloudPairScanner service")
+
+        return self._services['cloud_pair_scanner']
