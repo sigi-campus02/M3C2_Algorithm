@@ -1,0 +1,28 @@
+2025-08-29 17:37:21 [INFO] shared.logging_setup: ============================================================
+2025-08-29 17:37:21 [INFO] shared.logging_setup: Logging initialized at 2025-08-29 17:37:21
+2025-08-29 17:37:21 [INFO] shared.logging_setup: Log level: INFO
+2025-08-29 17:37:21 [INFO] shared.logging_setup: Log file: C:\Users\siegl\OneDrive\09 Sonstiges\M3C2_Algorithm\orchestration.log
+2025-08-29 17:37:21 [INFO] shared.logging_setup: ============================================================
+2025-08-29 17:37:21 [INFO] __main__: ============================================================
+2025-08-29 17:37:21 [INFO] __main__: M3C2 Pipeline - Refactored Version
+2025-08-29 17:37:21 [INFO] __main__: ============================================================
+2025-08-29 17:37:21 [WARNING] shared.config_loader: Data path does not exist: data
+2025-08-29 17:37:21 [ERROR] __main__: No folders specified for processing
+2025-08-29 17:39:46 [INFO] shared.logging_setup: ============================================================
+2025-08-29 17:39:46 [INFO] shared.logging_setup: Logging initialized at 2025-08-29 17:39:46
+2025-08-29 17:39:46 [INFO] shared.logging_setup: Log level: INFO
+2025-08-29 17:39:46 [INFO] shared.logging_setup: Log file: C:\Users\siegl\OneDrive\09 Sonstiges\M3C2_Algorithm\orchestration.log
+2025-08-29 17:39:46 [INFO] shared.logging_setup: ============================================================
+2025-08-29 17:39:46 [INFO] __main__: ============================================================
+2025-08-29 17:39:46 [INFO] __main__: M3C2 Pipeline - Refactored Version
+2025-08-29 17:39:46 [INFO] __main__: ============================================================
+2025-08-29 17:39:46 [ERROR] __main__: No folders specified for processing
+2025-08-29 17:41:48 [INFO] shared.logging_setup: ============================================================
+2025-08-29 17:41:48 [INFO] shared.logging_setup: Logging initialized at 2025-08-29 17:41:48
+2025-08-29 17:41:48 [INFO] shared.logging_setup: Log level: INFO
+2025-08-29 17:41:48 [INFO] shared.logging_setup: Log file: C:\Users\siegl\OneDrive\09 Sonstiges\M3C2_Algorithm\orchestration.log
+2025-08-29 17:41:48 [INFO] shared.logging_setup: ============================================================
+2025-08-29 17:41:48 [INFO] __main__: ============================================================
+2025-08-29 17:41:48 [INFO] __main__: M3C2 Pipeline - Refactored Version
+2025-08-29 17:41:48 [INFO] __main__: ============================================================
+2025-08-29 17:41:48 [ERROR] __main__: No folders specified for processing

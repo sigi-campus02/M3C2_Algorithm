@@ -1,4 +1,4 @@
-# New_Architecture/domain/commands/m3c2_commands.py
+# domain/commands/m3c2_commands.py
 """M3C2 Pipeline Commands - Clean Implementation"""
 
 import logging
@@ -11,6 +11,7 @@ from domain.entities import M3C2Parameters, M3C2Result
 from infrastructure.repositories.enhanced_point_cloud_repository import EnhancedPointCloudRepository
 from infrastructure.repositories.distance_repository import DistanceRepository
 from infrastructure.repositories.file_point_cloud_repository import FileParameterRepository
+from application.orchestration.m3c2_runner import M3C2Runner
 
 logger = logging.getLogger(__name__)
 

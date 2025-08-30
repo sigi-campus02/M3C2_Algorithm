@@ -5,7 +5,7 @@ import logging
 from typing import List
 
 from domain.commands.base import Command, CompositeCommand, ConditionalCommand
-from New_Architecture.domain.commands.m3c2_commands import (
+from domain.commands.m3c2_commands import (
     LoadPointCloudsCommand,  # Ohne V2!
     EstimateParametersCommand,
     RunM3C2Command,

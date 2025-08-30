@@ -51,7 +51,7 @@ pip install -r requirements.txt
 ### 3. Konfiguration anpassen
 
 ```bash
-cp config_example.json config.json
+cp config.json config.json
 # Edit config.json nach Bedarf
 ```
 

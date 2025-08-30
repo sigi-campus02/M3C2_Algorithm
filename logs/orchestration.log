@@ -1,0 +1,27 @@
+2025-08-29 17:49:17 [[32mINFO[0m] shared.logging_setup - ============================================================
+2025-08-29 17:49:17 [[32mINFO[0m] shared.logging_setup - Logging initialized at 2025-08-29 17:49:17
+2025-08-29 17:49:17 [[32mINFO[0m] shared.logging_setup - Log level: INFO
+2025-08-29 17:49:17 [[32mINFO[0m] shared.logging_setup - Log file: C:\Users\siegl\OneDrive\09 Sonstiges\M3C2_Algorithm\logs\orchestration.log
+2025-08-29 17:49:17 [[32mINFO[0m] shared.logging_setup - ============================================================
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ - ============================================================
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ - M3C2 Pipeline - Refactored Version
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ - ============================================================
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ - Scanning folder: Multi-Illumination
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ -   a_plain: 1 files (indices: [1])
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ -   a_ai: 1 files (indices: [1])
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ -   b_plain: 1 files (indices: [1])
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ -   b_ai: 1 files (indices: [1])
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ -   Created 4 cloud pairs
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ -     ai_vs_ai: 1 pairs
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ -     ai_vs_plain: 1 pairs
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ -     plain_vs_ai: 1 pairs
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ -     plain_vs_plain: 1 pairs
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ - Total cloud pairs to process: 4
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ - Created 4 pipeline configurations
+2025-08-29 17:49:17 [[32mINFO[0m] application.factories.service_factory - ServiceFactory initialized with data_path=data, output_path=outputs
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ - Ready to process - PipelineOrchestrator implementation pending
+2025-08-29 17:49:17 [[33mWARNING[0m] __main__ - This is where the actual processing would happen
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ - Services initialized successfully
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ - Pipeline execution would start here...
+2025-08-29 17:49:17 [[32mINFO[0m] application.factories.service_factory - Reset all services and repositories
+2025-08-29 17:49:17 [[32mINFO[0m] __main__ - Pipeline completed
