@@ -202,3 +202,70 @@
 2025-08-30 18:37:06 [[32mINFO[0m] __main__ - Pipeline completed successfully!
 2025-08-30 18:37:06 [[32mINFO[0m] application.factories.service_factory - Reset all services and repositories
 2025-08-30 18:37:06 [[32mINFO[0m] __main__ - Services cleaned up
+2025-08-30 18:54:39 [[32mINFO[0m] shared.logging_setup - ============================================================
+2025-08-30 18:54:39 [[32mINFO[0m] shared.logging_setup - Logging initialized at 2025-08-30 18:54:39
+2025-08-30 18:54:39 [[32mINFO[0m] shared.logging_setup - Log level: INFO
+2025-08-30 18:54:39 [[32mINFO[0m] shared.logging_setup - Log file: C:\Users\siegl\OneDrive\09 Sonstiges\M3C2_Algorithm\logs\orchestration.log
+2025-08-30 18:54:39 [[32mINFO[0m] shared.logging_setup - ============================================================
+2025-08-30 18:54:39 [[32mINFO[0m] __main__ - ============================================================
+2025-08-30 18:54:39 [[32mINFO[0m] __main__ - M3C2 Pipeline - Clean Architecture
+2025-08-30 18:54:39 [[32mINFO[0m] __main__ - ============================================================
+2025-08-30 18:54:39 [[32mINFO[0m] shared.config_loader - Loaded JSON config from config.json
+2025-08-30 18:54:39 [[32mINFO[0m] shared.config_loader - Configuration loaded: ['data_path', 'output_path', 'm3c2', 'outlier_detection', 'processing', 'output', 'plotting', 'logging', 'folder_ids', 'visualization', 'performance', 'advanced', 'scanner']
+2025-08-30 18:54:39 [[32mINFO[0m] application.factories.service_factory - ServiceFactory initialized with data_path=data, output_path=outputs
+2025-08-30 18:54:39 [[32mINFO[0m] application.services.cloud_pair_scanner - Scanning folder: Multi-Illumination
+2025-08-30 18:54:39 [[32mINFO[0m] application.services.cloud_pair_scanner -   a_ai: 1 files (indices: [1])
+2025-08-30 18:54:39 [[32mINFO[0m] application.services.cloud_pair_scanner -   a_plain: 1 files (indices: [1])
+2025-08-30 18:54:39 [[32mINFO[0m] application.services.cloud_pair_scanner -   b_ai: 1 files (indices: [1])
+2025-08-30 18:54:39 [[32mINFO[0m] application.services.cloud_pair_scanner -   b_plain: 1 files (indices: [1])
+2025-08-30 18:54:39 [[32mINFO[0m] application.services.cloud_pair_scanner -   Created 4 cloud pairs:
+2025-08-30 18:54:39 [[32mINFO[0m] application.services.cloud_pair_scanner -     plain_vs_plain: 1 pairs
+2025-08-30 18:54:39 [[32mINFO[0m] application.services.cloud_pair_scanner -     plain_vs_ai: 1 pairs
+2025-08-30 18:54:39 [[32mINFO[0m] application.services.cloud_pair_scanner -     ai_vs_plain: 1 pairs
+2025-08-30 18:54:39 [[32mINFO[0m] application.services.cloud_pair_scanner -     ai_vs_ai: 1 pairs
+2025-08-30 18:54:39 [[32mINFO[0m] __main__ - Total cloud pairs to process: 4
+2025-08-30 18:54:39 [[32mINFO[0m] __main__ - Created 4 pipeline configurations
+2025-08-30 18:54:39 [[32mINFO[0m] __main__ - Starting pipeline execution...
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - ================================================================================
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - Starting batch processing: 4 configurations
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - ================================================================================
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - 
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - [1/4] Processing: a-1-AI.laz-b-1-AI.laz
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - ------------------------------------------------------------
+2025-08-30 18:54:39 [[31mERROR[0m] application.orchestration.pipeline_orchestrator - [1/4] FAILED: a-1-AI.laz-b-1-AI.laz - No module named 'services'
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - 
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - [2/4] Processing: a-1-AI.laz-b-1.laz
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - ------------------------------------------------------------
+2025-08-30 18:54:39 [[31mERROR[0m] application.orchestration.pipeline_orchestrator - [2/4] FAILED: a-1-AI.laz-b-1.laz - No module named 'services'
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - 
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - [3/4] Processing: a-1.laz-b-1-AI.laz
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - ------------------------------------------------------------
+2025-08-30 18:54:39 [[31mERROR[0m] application.orchestration.pipeline_orchestrator - [3/4] FAILED: a-1.laz-b-1-AI.laz - No module named 'services'
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - 
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - [4/4] Processing: a-1.laz-b-1.laz
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - ------------------------------------------------------------
+2025-08-30 18:54:39 [[31mERROR[0m] application.orchestration.pipeline_orchestrator - [4/4] FAILED: a-1.laz-b-1.laz - No module named 'services'
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - 
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - ================================================================================
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - BATCH PROCESSING COMPLETE
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - ================================================================================
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - Total configurations: 4
+2025-08-30 18:54:39 [[31mERROR[0m] application.orchestration.pipeline_orchestrator - Failed configurations:
+2025-08-30 18:54:39 [[31mERROR[0m] application.orchestration.pipeline_orchestrator -   - a-1-AI.laz-b-1-AI.laz
+2025-08-30 18:54:39 [[31mERROR[0m] application.orchestration.pipeline_orchestrator -   - a-1-AI.laz-b-1.laz
+2025-08-30 18:54:39 [[31mERROR[0m] application.orchestration.pipeline_orchestrator -   - a-1.laz-b-1-AI.laz
+2025-08-30 18:54:39 [[31mERROR[0m] application.orchestration.pipeline_orchestrator -   - a-1.laz-b-1.laz
+2025-08-30 18:54:39 [[32mINFO[0m] application.orchestration.pipeline_orchestrator - ================================================================================
+2025-08-30 18:54:39 [[32mINFO[0m] __main__ - ============================================================
+2025-08-30 18:54:39 [[32mINFO[0m] __main__ - EXECUTION SUMMARY
+2025-08-30 18:54:39 [[32mINFO[0m] __main__ -   Total: 4
+2025-08-30 18:54:39 [[32mINFO[0m] __main__ -   Successful: 0
+2025-08-30 18:54:39 [[32mINFO[0m] __main__ -   Failed: 4
+2025-08-30 18:54:39 [[33mWARNING[0m] __main__ - Failed configurations:
+2025-08-30 18:54:39 [[33mWARNING[0m] __main__ -   - a-1-AI.laz-b-1-AI.laz
+2025-08-30 18:54:39 [[33mWARNING[0m] __main__ -   - a-1-AI.laz-b-1.laz
+2025-08-30 18:54:39 [[33mWARNING[0m] __main__ -   - a-1.laz-b-1-AI.laz
+2025-08-30 18:54:39 [[33mWARNING[0m] __main__ -   - a-1.laz-b-1.laz
+2025-08-30 18:54:39 [[32mINFO[0m] __main__ - Pipeline completed successfully!
+2025-08-30 18:54:39 [[32mINFO[0m] application.factories.service_factory - Reset all services and repositories
+2025-08-30 18:54:39 [[32mINFO[0m] __main__ - Services cleaned up
