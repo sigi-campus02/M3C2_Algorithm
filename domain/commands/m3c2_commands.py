@@ -26,10 +26,8 @@ class LoadPointCloudsCommand(Command):
 
         try:
             # Baue vollständige Pfade
-            folder_path = Path(self.repository.base_path) / config.cloud_pair.folder_id
-            mov_path = folder_path / config.cloud_pair.moving_cloud
-            ref_path = folder_path / config.cloud_pair.reference_cloud
-
+            mov_path = Path(config.cloud_pair.folder_id) / config.cloud_pair.moving_cloud
+            ref_path = Path(config.cloud_pair.folder_id) / config.cloud_pair.reference_cloud
             logger.info(f"Loading moving cloud: {mov_path}")
             logger.info(f"Loading reference cloud: {ref_path}")
 
@@ -134,8 +132,8 @@ class RunM3C2Command(Command):
             logger.info(f"Running M3C2 with {len(corepoints)} corepoints")
 
             distances, uncertainties = self.m3c2_runner.run(
-                mov_cloud=mov,
-                ref_cloud=ref,
+                moving_cloud=mov,
+                reference_cloud=ref,
                 corepoints=corepoints,
                 normal_scale=params.normal_scale,
                 search_scale=params.search_scale

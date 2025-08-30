@@ -104,7 +104,48 @@ class PointCloudRepository:
             return points
         else:
             return py4dgeo.Epoch(points)
-    
+
+    def load(self, path: str) -> np.ndarray:
+        """
+        Lädt eine Punktwolke und gibt sie als numpy Array zurück.
+        """
+        full_path = self._resolve_path(path)
+
+        if not full_path.exists():
+            raise FileNotFoundError(f"Point cloud not found: {full_path}")
+
+        # Erkenne Format
+        suffix = full_path.suffix.lower()
+        logger.info(f"Loading point cloud from {full_path} (format: {suffix})")
+
+        # Lade basierend auf Format
+        if suffix in ['.las', '.laz']:
+            points = self._load_las(full_path)
+        elif suffix in ['.xyz', '.txt']:
+            points = np.loadtxt(str(full_path), usecols=(0, 1, 2))
+        elif suffix == '.ply':
+            # Vereinfachte PLY-Ladung
+            try:
+                import plyfile
+                plydata = plyfile.PlyData.read(str(full_path))
+                vertex = plydata['vertex']
+                points = np.vstack([vertex['x'], vertex['y'], vertex['z']]).T
+            except ImportError:
+                # Fallback zu numpy
+                points = np.loadtxt(str(full_path), skiprows=15, usecols=(0, 1, 2))
+        else:
+            # Default: versuche als Text zu laden
+            points = np.loadtxt(str(full_path), usecols=(0, 1, 2))
+
+        # Stelle sicher, dass es ein (n, 3) Array ist
+        if points.ndim == 1:
+            points = points.reshape(-1, 3)
+
+        if points.shape[1] != 3:
+            raise ValueError(f"Expected 3 columns (x,y,z), got {points.shape[1]}")
+
+        return points
+
     def save_point_cloud(
         self, 
         data: Union[np.ndarray, py4dgeo.Epoch],
@@ -184,33 +225,43 @@ class PointCloudRepository:
             points = np.hstack([points, normals])
         
         return points
-    
+
     def _load_las(self, path: Path) -> np.ndarray:
-        """Lädt LAS/LAZ Format"""
-        if not LASPY_AVAILABLE:
-            raise RuntimeError("LAS/LAZ support requires 'laspy' package. Install with: pip install laspy")
-        
+        """
+        Lädt LAS/LAZ Dateien mit laspy.
+
+        Args:
+            path: Pfad zur LAS/LAZ-Datei
+
+        Returns:
+            numpy Array mit Shape (n, 3) für x, y, z Koordinaten
+        """
         try:
-            las = laspy.read(str(path))
+            import laspy
+
+            # Lade die LAS/LAZ Datei
+            with laspy.open(str(path)) as file:
+                las = file.read()
+
+            # Extrahiere x, y, z Koordinaten
+            x = np.array(las.x)
+            y = np.array(las.y)
+            z = np.array(las.z)
+
+            # Kombiniere zu einem (n, 3) Array
+            points = np.column_stack((x, y, z))
+
+            logger.info(f"Loaded {len(points)} points from {path.name}")
+            return points
+
+        except ImportError:
+            logger.error("laspy not installed. Install with: pip install laspy")
+            raise ImportError("laspy is required for LAS/LAZ files")
         except Exception as e:
-            if path.suffix == '.laz':
-                raise RuntimeError("LAZ files require additional backend. Install with: pip install 'laspy[lazrs]'") from e
+            logger.error(f"Error loading LAS/LAZ file: {e}")
             raise
-        
-        # Skaliere Koordinaten
-        x = las.x
-        y = las.y
-        z = las.z
-        
-        points = np.vstack([x, y, z]).T.astype(np.float64)
-        
-        # Optional: Zusätzliche Attribute
-        if hasattr(las, 'intensity'):
-            intensity = las.intensity.reshape(-1, 1)
-            points = np.hstack([points, intensity])
-        
-        return points
-    
+
+
     def _load_obj(self, path: Path) -> np.ndarray:
         """Lädt Wavefront OBJ Format (nur Vertices)"""
         vertices = []
