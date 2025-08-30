@@ -1,4 +1,4 @@
-# New_Architecture/application/services/modular_plot_service.py
+# New_Architecture/application/services/modular_services.py
 """Modularisierter Plot Service mit Strategy Pattern"""
 
 import logging

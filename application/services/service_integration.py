@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Any
 from pathlib import Path
 import numpy as np
 
-from application.services.modular_plot_service import ModularPlotService
+from application.services.modular_services import ModularPlotService
 from application.services.modular_statistics_service import ModularStatisticsService
 from application.services.visualization_service import VisualizationService
 from application.services.export_service import ExportService

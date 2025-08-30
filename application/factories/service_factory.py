@@ -130,11 +130,13 @@ class ServiceFactory:
         return self._services['param_estimator']
 
     def get_statistics_service(self):
-        """Gibt StatisticsService zurück"""
         if 'statistics_service' not in self._services:
-            from application.services.statistics_service import StatisticsService
-            self._services['statistics_service'] = StatisticsService()
-            logger.debug("Created StatisticsService")
+            from application.services.modular_services import ModularStatisticsService
+            self._services['statistics_service'] = ModularStatisticsService(
+                repository=self.get_statistics_repository(),
+                default_strategies=['basic', 'advanced', 'distance']
+            )
+            logger.debug("Created ModularStatisticsService")
         return self._services['statistics_service']
 
     def get_visualization_service(self):
