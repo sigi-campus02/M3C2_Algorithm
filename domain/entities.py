@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from typing import Optional, Dict, Any, List
 from enum import Enum
 import numpy as np
+from pathlib import Path
 
 
 class ProcessingVersion(Enum):
@@ -109,30 +110,45 @@ class PipelineConfiguration:
     project_name: str = "default_project"
     output_format: str = "excel"
     version: ProcessingVersion = ProcessingVersion.PYTHON
-    
+
+    # Zusätzliche Felder für erweiterte Konfiguration
+    folder_id: Optional[str] = None
+    generate_plots: bool = False
+    output_base_path: Optional[Any] = None  # Path oder str
+
+    def __post_init__(self):
+        """Post-Init für automatische Felder"""
+        # Setze folder_id aus cloud_pair wenn nicht explizit gesetzt
+        if self.folder_id is None and hasattr(self.cloud_pair, 'folder_id'):
+            self.folder_id = self.cloud_pair.folder_id
+
+        # Setze default output_base_path wenn nicht gesetzt
+        if self.output_base_path is None:
+            self.output_base_path = f"outputs/{self.project_name}_output"
+
+        # Konvertiere zu Path wenn es ein String ist
+        if isinstance(self.output_base_path, str):
+            from pathlib import Path
+            self.output_base_path = Path(self.output_base_path)
+
     def validate(self) -> bool:
         """Validiert die gesamte Konfiguration"""
         validations = [
             self.use_subsampled_corepoints > 0,
             self.outlier_config.validate(),
-            self.output_format in ["excel", "json", "csv"],
+            self.output_format in ["excel", "json", "csv", "all"],
             self.stats_type in ["distance", "single"]
         ]
-        
+
         if self.m3c2_params:
             validations.append(self.m3c2_params.validate())
-        
+
         return all(validations)
-    
-    @property
-    def output_base_path(self) -> str:
-        """Basis-Pfad für Ausgaben"""
-        return f"outputs/{self.project_name}_output"
-    
+
     @property
     def plots_path(self) -> str:
         """Pfad für Plots"""
-        return f"{self.output_base_path}/{self.project_name}_plots"
+        return str(self.output_base_path / f"{self.project_name}_plots")
 
 
 @dataclass
